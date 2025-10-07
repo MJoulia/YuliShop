@@ -1,0 +1,96 @@
+.payment-page {
+  background: #fafafa;
+  color: #222;
+  min-height: 100vh;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.payment-page .container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.payment-page h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 24px 0;
+  color: #111;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+}
+@media (max-width: 960px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.04);
+}
+
+.field { display:block; margin-bottom: 14px; }
+.field > span { display:block; font-size:13px; color:#555; margin-bottom:6px; }
+.field input {
+  width:100%; border:1px solid #d1d1d1; border-radius:10px;
+  padding:10px 12px; font-size:15px; background:#fff;
+  transition:border-color .15s, box-shadow .15s;
+}
+.field input:focus {
+  outline:none; border-color:#4a90e2; box-shadow:0 0 0 3px rgba(74,144,226,.2);
+}
+
+.row { display:grid; gap:14px; }
+.row.two { grid-template-columns: 1fr 1fr; }
+@media (max-width: 720px) {.row.two { grid-template-columns:1fr; } }
+
+.lines { list-style:none; padding:0; margin:0; }
+.line {
+  display:grid; grid-template-columns:72px 1fr auto;
+  gap:12px; align-items:center; padding:10px 0; border-bottom:1px solid #eee;
+}
+.line:last-child { border-bottom:none; }
+.line img { width:72px; height:72px; object-fit:cover; border-radius:8px; background:#f3f3f3; }
+.meta .title { font-weight:600; margin-bottom:2px; }
+.brand-qty { font-size:13px; color:#777; display:flex; gap:8px; }
+.price { font-weight:600; color:#111; }
+
+.totals { margin-top:12px; }
+.totals > div { display:grid; grid-template-columns:1fr auto; padding:6px 0; }
+.totals .grand { border-top:1px solid #e3e3e3; margin-top:8px; padding-top:10px; font-size:16px; font-weight:700; }
+
+.shipto { margin-top:16px; }
+.shipto h3 { margin:0 0 6px; font-size:16px; }
+.shipto p { margin:0; color:#555; line-height:1.5; }
+
+.btn {
+  display:inline-flex; justify-content:center; align-items:center;
+  gap:8px; padding:12px 16px; border-radius:10px; cursor:pointer;
+  font-weight:600; border:1px solid #d1d1d1; background:#fff; color:#333;
+  transition:background .15s, border-color .15s;
+}
+.btn:hover { background:#f4f4f4; }
+.btn.primary {
+  width:100%; margin-top:10px; background:#4a90e2; border-color:#4a90e2; color:#fff;
+}
+.btn.primary:hover { background:#3579c5; border-color:#3579c5; }
+.btn.ghost { width:100%; margin-top:8px; }
+
+.error {
+  background:#ffe9e9; color:#b50000; border:1px solid #ffb5b5;
+  border-radius:10px; padding:10px 12px; margin-top:10px;
+}
+
+.success-card {
+  background:#fff; border:1px solid #e3e3e3; border-radius:14px;
+  padding:30px; text-align:center; margin-top:40px;
+  box-shadow:0 4px 10px rgba(0,0,0,.05);
+}
+.success-card .btn { margin-top:16px; }
+.disclaimer { color:#777; font-size:12px; margin-top:12px; }

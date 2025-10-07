@@ -16,7 +16,7 @@ import ProtectedRouteAdmin from "./routes/ProtectedRouteAdmin";
 import PerfumeManager from "./component/Admin/PerfumeManager";
 import ShoppingCartPage from "./component/ShoppingCartPage/ShoppingCartPage";
 import CheckoutPage from "./component/CheckoutPage/CheckoutPage";
-
+import PaymentPage from "./component/PaymentPage/PaymentPage";
 export default function App() {
   return (
     <Routes>
@@ -56,7 +56,7 @@ export default function App() {
         <Route path="/perfume-manager" element={<PerfumeManager />} />
       </Route>
       <Route path="/checkout" element={<CheckoutPage />} />
-
+      <Route path="/pay" element={<PaymentPage />} />
 
       {/* ---------- 404 ---------- */}
       <Route path="*" element={<div style={{ padding: 16 }}>404 — Page introuvable</div>} />

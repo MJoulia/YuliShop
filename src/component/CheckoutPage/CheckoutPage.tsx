@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./CheckoutPage.css";
-import Navbar from "../Navbar/Navbar"; // ✅ Navbar importée
+import Navbar from "../Navbar/Navbar";
 
-// --- Types
 type CartItem = {
   id: string;
   productId: string;
@@ -29,7 +29,6 @@ type Customer = {
 };
 
 type ShippingMethod = "standard" | "express";
-type PaymentMethod = "card" | "cod";
 
 type Props = {
   onOrderPlaced?: (order: {
@@ -37,7 +36,7 @@ type Props = {
     customer: Customer;
     items: CartItem[];
     shippingMethod: ShippingMethod;
-    paymentMethod: PaymentMethod;
+    paymentMethod: "card";
     totals: {
       subtotalCents: number;
       shippingCents: number;
@@ -46,9 +45,9 @@ type Props = {
   }) => void;
 };
 
-// --- Constantes
 const LS_CART = "yulishop_cart";
 const LS_CUSTOMER = "yulishop_customer";
+const LS_PENDING_ORDER = "yulishop_pending_order";
 
 const fmtPrice = (cents: number, locale = "de-DE", currency = "EUR") =>
   new Intl.NumberFormat(locale, { style: "currency", currency }).format(
@@ -79,15 +78,17 @@ const saveCustomer = (c: Customer) => {
   } catch {}
 };
 
-// --- Composant principal
 export default function CheckoutPage({ onOrderPlaced }: Props) {
+  const navigate = useNavigate();
+
   const [items, setItems] = useState<CartItem[]>(loadCart());
   const [shippingMethod, setShippingMethod] =
     useState<ShippingMethod>("standard");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+  // 🚫 plus de choix de paiement : toujours "card"
+  const paymentMethod: "card" = "card";
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successId, setSuccessId] = useState<string | null>(null);
 
   const [customer, setCustomer] = useState<Customer>(() => {
     return (
@@ -119,6 +120,7 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
     [items]
   );
 
+  // Livraison gratuite dès 100€, sinon 4.90€ / 9.90€
   const shippingCents = useMemo(() => {
     if (items.length === 0) return 0;
     if (subtotalCents >= 10000) return 0;
@@ -139,11 +141,12 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
     };
 
   const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  const required = (v?: string) => !!v && v.trim().length > 1;
+  const required = (v?: string) => !!v && v.trim().length >= 1; // tolérant
+  const min2 = (v?: string) => !!v && v.trim().length >= 2;
 
   const formValid =
-    required(customer.firstName) &&
-    required(customer.lastName) &&
+    min2(customer.firstName) &&
+    min2(customer.lastName) &&
     isEmail(customer.email) &&
     required(customer.street) &&
     required(customer.city) &&
@@ -151,12 +154,12 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
     required(customer.country) &&
     items.length > 0;
 
-  const placeOrder = async (e: React.FormEvent) => {
+  const continueToPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!formValid) {
-      setError("Please fill all required fields correctly.");
+      setError("Please complete all required fields correctly.");
       return;
     }
 
@@ -170,57 +173,20 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
         totals: { subtotalCents, shippingCents, totalCents },
       };
 
-      if (onOrderPlaced) {
-        const fakeId = "ord_" + Math.random().toString(36).slice(2, 10);
-        onOrderPlaced({ id: fakeId, ...payload });
-        setSuccessId(fakeId);
-      } else {
-        const res = await fetch("/api/orders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error(await res.text());
-        const { id } = await res.json();
-        setSuccessId(id);
-      }
-
+      // 👉 Toujours paiement par carte : stocke la commande en attente et va sur /pay
+      localStorage.setItem(LS_PENDING_ORDER, JSON.stringify(payload));
       if (customer.saveInfo) saveCustomer(customer);
-      localStorage.setItem(LS_CART, JSON.stringify([]));
-      setItems([]);
+      setSubmitting(false);
+      navigate("/pay");
     } catch (err: any) {
-      setError(err.message || "An error occurred. Try again.");
-    } finally {
+      setError(err?.message || "Something went wrong. Please try again.");
       setSubmitting(false);
     }
   };
 
-  // ✅ Page de succès après commande
-  if (successId) {
-    return (
-      <div className="checkout-page">
-        <Navbar /> {/* ✅ Navbar affichée ici */}
-        <div className="container">
-          <div className="success-card">
-            <h1>Thank you! 🎉</h1>
-            <p>Your order has been placed successfully.</p>
-            <p>
-              <strong>Order ID:</strong> {successId}
-            </p>
-            <button onClick={() => (window.location.href = "/home")}>
-              Back to Home
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ✅ Page principale checkout
   return (
     <div className="checkout-page">
-      <Navbar /> {/* ✅ Navbar affichée ici aussi */}
-
+      <Navbar />
       <div className="container">
         <h1>Checkout</h1>
 
@@ -232,8 +198,8 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
             </button>
           </div>
         ) : (
-          <form className="grid" onSubmit={placeOrder} noValidate>
-            {/* --- Informations client --- */}
+          <form className="grid" onSubmit={continueToPayment} noValidate>
+            {/* Colonne gauche : infos client */}
             <section className="panel">
               <h2>Shipping details</h2>
 
@@ -269,6 +235,7 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
                   type="tel"
                   value={customer.phone || ""}
                   onChange={updateField("phone")}
+                  placeholder="+49 ..."
                 />
               </div>
 
@@ -278,7 +245,7 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
                   required
                   value={customer.street}
                   onChange={updateField("street")}
-                  placeholder="Street and number"
+                  placeholder="Street and house number"
                 />
               </div>
 
@@ -311,7 +278,7 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
                   label="Order notes (optional)"
                   value={customer.notes || ""}
                   onChange={updateField("notes")}
-                  placeholder="Delivery note or door code"
+                  placeholder="Delivery notes, door code, etc."
                 />
               </div>
 
@@ -325,7 +292,7 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
               </label>
             </section>
 
-            {/* --- Résumé commande --- */}
+            {/* Colonne droite : résumé + livraison (plus de bloc 'Payment' ici) */}
             <aside className="summary">
               <div className="panel">
                 <h2>Order summary</h2>
@@ -338,10 +305,11 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
                           "https://via.placeholder.com/72x72?text=%20"
                         }
                         alt={it.name}
+                        loading="lazy"
                       />
                       <div className="meta">
                         <div className="title">
-                          {it.name} {it.variant && `• ${it.variant}`}
+                          {it.name} {it.variant ? `• ${it.variant}` : ""}
                         </div>
                         <div className="brand-qty">
                           {it.brand && <span>{it.brand}</span>}
@@ -364,11 +332,20 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
                     <dt>Shipping</dt>
                     <dd>{fmtPrice(shippingCents)}</dd>
                   </div>
+                  <div>
+                    <dt>Tax</dt>
+                    <dd>Included</dd>
+                  </div>
                   <div className="grand">
                     <dt>Total</dt>
                     <dd>{fmtPrice(totalCents)}</dd>
                   </div>
                 </dl>
+
+                {/* info paiement fixe */}
+                <p style={{ marginTop: 8, color: "#666", fontSize: 13 }}>
+                  Payment method: <strong>Credit/Debit Card</strong>
+                </p>
               </div>
 
               <div className="panel">
@@ -388,9 +365,12 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
                     />
                     <div>
                       <div className="t">Standard (2–4 business days)</div>
-                      <div className="s">{fmtPrice(490)}</div>
+                      <div className="s">
+                        {subtotalCents >= 10000 ? "Free" : fmtPrice(490)}
+                      </div>
                     </div>
                   </label>
+
                   <label
                     className={`choice ${
                       shippingMethod === "express" ? "active" : ""
@@ -405,47 +385,9 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
                     />
                     <div>
                       <div className="t">Express (1–2 business days)</div>
-                      <div className="s">{fmtPrice(990)}</div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              <div className="panel">
-                <h3>Payment</h3>
-                <div className="choices">
-                  <label
-                    className={`choice ${
-                      paymentMethod === "card" ? "active" : ""
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="pay"
-                      value="card"
-                      checked={paymentMethod === "card"}
-                      onChange={() => setPaymentMethod("card")}
-                    />
-                    <div>
-                      <div className="t">Credit/Debit Card</div>
-                      <div className="s">Secure demo</div>
-                    </div>
-                  </label>
-                  <label
-                    className={`choice ${
-                      paymentMethod === "cod" ? "active" : ""
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="pay"
-                      value="cod"
-                      checked={paymentMethod === "cod"}
-                      onChange={() => setPaymentMethod("cod")}
-                    />
-                    <div>
-                      <div className="t">Cash on Delivery</div>
-                      <div className="s">Pay when delivered</div>
+                      <div className="s">
+                        {subtotalCents >= 10000 ? "Free" : fmtPrice(990)}
+                      </div>
                     </div>
                   </label>
                 </div>
@@ -457,10 +399,11 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
                 className="place-order"
                 type="submit"
                 disabled={!formValid || submitting}
+                aria-busy={submitting}
               >
                 {submitting
-                  ? "Placing order..."
-                  : `Place order • ${fmtPrice(totalCents)}`}
+                  ? "Processing..."
+                  : `Continue to payment • ${fmtPrice(totalCents)}`}
               </button>
 
               <button
@@ -478,7 +421,8 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
   );
 }
 
-// --- Champs formulaire
+/* ---------- Small form controls ---------- */
+
 function Field({
   label,
   value,
@@ -506,6 +450,7 @@ function Field({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        required={required}
       />
     </label>
   );
