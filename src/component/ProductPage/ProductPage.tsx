@@ -68,6 +68,10 @@ function Stars({
 
 /* ===================== Page ===================== */
 export default function ProductPage() {
+
+  //Base64
+  const [imageBase64, setImageBase64] = useState<string>("");
+
   const { slug } = useParams<{ slug: string }>();
   const [perfume, setPerfume] = useState<Perfume | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,6 +95,34 @@ export default function ProductPage() {
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   const isLoggedIn = !!localStorage.getItem("yulishop_token");
+
+
+  function convertToBase64(file: Blob): Promise<string | ArrayBuffer | null> {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+
+      fileReader.onload = () => resolve(fileReader.result);
+      fileReader.onerror = (error) => reject(error);
+    });
+  }
+
+  async function getBase64FromUrl(url: string): Promise<string | ArrayBuffer | null> {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const base64 = await convertToBase64(blob);
+    console.log(base64)
+    return base64
+  }
+
+  useEffect(() => {
+    (async () => {
+      const base64 = await getBase64FromUrl("./src/image/yuli.png"); 
+      if (typeof base64 === "string") {
+        setImageBase64(base64);
+      }
+    })();
+  }, []);
 
   /* -------- Load product -------- */
   useEffect(() => {
@@ -313,12 +345,13 @@ export default function ProductPage() {
         <div className="product">
           {/* Left: image */}
           <div className="gallery">
-            <img
-              className="cover"
-              src={cover}
-              alt={perfume.name}
-              onError={(e) => (e.currentTarget.src = "/images/placeholder-perfume.jpg")}
-            />
+            { imageBase64 && 
+              <img
+                className="cover"
+                src={imageBase64}
+                alt="preview"
+                width={200}
+              />}
           </div>
 
           {/* Right: info */}

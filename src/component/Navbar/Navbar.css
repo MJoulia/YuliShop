@@ -63,12 +63,55 @@
   background: #333;
 }
 
+/* Variant outline pour tes liens 'Sign up' */
+.btn.outline {
+  background: transparent;
+  color: #111 !important;
+  border: 1px solid #111;
+}
+.btn.outline:hover {
+  background: #111;
+  color: #fff !important;
+}
+
+/* --- Actions utilisateur (cart + logout) --- */
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Boutons icônes (cart + logout) */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  width: 36px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.icon-btn:hover {
+  background: #f6f6f6;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+/* Spécifiques */
+.cart-btn {
+  position: relative; /* pour le badge */
+}
+
 /* --- Logout button (icône) --- */
 .logout-btn {
-  border: none;
-  background: transparent;
+  border: 1px solid #eee;    /* harmonisé avec icon-btn */
+  background: #fff;
   cursor: pointer;
-  padding: 6px;
+  padding: 0;                /* icône uniquement */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,6 +124,27 @@
   background: #f6f6f6;
   color: #b00020;   /* Rouge moderne */
   transform: rotate(-10deg);
+}
+
+/* Badge quantité panier */
+.cart-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: #ef4444;      /* rouge */
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,.1);
 }
 
 /* --- Mobile burger --- */
@@ -131,5 +195,9 @@
 
   .spacer {
     display: none;
+  }
+
+  .user-actions {
+    margin-top: 6px;
   }
 }

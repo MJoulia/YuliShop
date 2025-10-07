@@ -1,0 +1,303 @@
+.checkout-page {
+  background: #fafafa;
+  color: #222;
+  min-height: 100vh;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Container principal */
+.checkout-page .container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+/* Titres */
+.checkout-page h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 24px 0;
+  color: #111;
+}
+
+.checkout-page h2,
+.checkout-page h3 {
+  color: #222;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* --- Grille --- */
+.grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Cartes/panneaux --- */
+.panel {
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* --- Champs de formulaire --- */
+.field {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.field > span {
+  display: block;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.field em {
+  color: #d10000;
+  font-style: normal;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  border: 1px solid #d1d1d1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background: #fff;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+/* --- Disposition des champs --- */
+.row {
+  display: grid;
+  gap: 14px;
+}
+.row.two {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 720px) {
+  .row.two {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Checkbox --- */
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #555;
+}
+.checkbox input {
+  width: 18px;
+  height: 18px;
+}
+
+/* --- Résumé de commande --- */
+.summary {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+}
+
+.lines {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.line:last-child {
+  border-bottom: none;
+}
+
+.line img {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #f3f3f3;
+}
+
+.line .meta {
+  font-size: 14px;
+}
+.line .title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.brand-qty {
+  font-size: 13px;
+  color: #777;
+  display: flex;
+  gap: 8px;
+}
+.price {
+  font-weight: 600;
+  color: #111;
+}
+
+/* --- Totaux --- */
+.totals {
+  margin-top: 12px;
+}
+.totals > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  padding: 6px 0;
+}
+.totals .grand {
+  border-top: 1px solid #e3e3e3;
+  margin-top: 8px;
+  padding-top: 10px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* --- Méthodes livraison/paiement --- */
+.choices {
+  display: grid;
+  gap: 10px;
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.choice.active {
+  border-color: #4a90e2;
+  background: #e9f3ff;
+}
+
+.choice .t {
+  font-weight: 600;
+}
+.choice .s {
+  font-size: 13px;
+  color: #666;
+}
+
+/* --- Erreurs et alertes --- */
+.error {
+  background: #ffe9e9;
+  color: #b50000;
+  border: 1px solid #ffb5b5;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 10px;
+}
+
+/* --- Boutons --- */
+.place-order {
+  width: 100%;
+  margin-top: 14px;
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.place-order:hover {
+  background: #3579c5;
+}
+
+.place-order:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.back {
+  width: 100%;
+  margin-top: 8px;
+  background: #fff;
+  border: 1px solid #d1d1d1;
+  color: #333;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.back:hover {
+  background: #f4f4f4;
+}
+
+/* --- État vide --- */
+.empty,
+.success-card {
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 14px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 40px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.empty p,
+.success-card p {
+  color: #555;
+  margin: 8px 0;
+}
+
+.empty button,
+.success-card button {
+  margin-top: 16px;
+  background: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.empty button:hover,
+.success-card button:hover {
+  background: #3579c5;
+}

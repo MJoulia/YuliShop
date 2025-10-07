@@ -1,19 +1,21 @@
-import './App.css';
-import { Routes, Route } from 'react-router-dom';
+import "./App.css";
+import { Routes, Route } from "react-router-dom";
 
 // Pages publiques
-import LoginPage from './component/LoginPage/LoginPage.tsx';
-import RegisterPage from './component/RegisterPage/RegisterPage.tsx';
-import HomePage from './component/Home/HomePage.tsx';
-import ProductPage from './component/ProductPage/ProductPage.tsx';
+import LoginPage from "./component/LoginPage/LoginPage";
+import RegisterPage from "./component/RegisterPage/RegisterPage";
+import HomePage from "./component/Home/HomePage";
+import ProductPage from "./component/ProductPage/ProductPage";
 
 // Pages protégées
-import CollectionPage from './component/CollectionPage/CollectionPage.tsx';
-import ProtectedRoute from './routes/ProtectedRoute.tsx';
+import CollectionPage from "./component/CollectionPage/CollectionPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 // Admin
-import ProtectedRouteAdmin from './routes/ProtectedRouteAdmin.tsx';
-import PerfumeManager from './component/Admin/PerfumeManager.tsx';
+import ProtectedRouteAdmin from "./routes/ProtectedRouteAdmin";
+import PerfumeManager from "./component/Admin/PerfumeManager";
+import ShoppingCartPage from "./component/ShoppingCartPage/ShoppingCartPage";
+import CheckoutPage from "./component/CheckoutPage/CheckoutPage";
 
 export default function App() {
   return (
@@ -23,7 +25,7 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/home" element={<HomePage />} />
 
-      {/* Produit : j’ai changé le param en :slug pour être cohérent */}
+      {/* Produit */}
       <Route path="/product/:slug" element={<ProductPage />} />
 
       {/* ---------- Routes protégées (user connecté) ---------- */}
@@ -36,16 +38,28 @@ export default function App() {
         }
       />
 
+      {/* Panier protégé (icône visible seulement connecté) */}
+      <Route
+        path="/cart"
+        element={
+          <ProtectedRoute>
+            <ShoppingCartPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* ---------- Routes Admin ---------- */}
       <Route element={<ProtectedRouteAdmin />}>
+        {/* Chemin admin “officiel” */}
         <Route path="/admin/perfumes" element={<PerfumeManager />} />
+        {/* Alias pour matcher ton Navbar ("/perfume-manager") */}
+        <Route path="/perfume-manager" element={<PerfumeManager />} />
       </Route>
+      <Route path="/checkout" element={<CheckoutPage />} />
+
 
       {/* ---------- 404 ---------- */}
-      <Route
-        path="*"
-        element={<div style={{ padding: 16 }}>404 — Page introuvable</div>}
-      />
+      <Route path="*" element={<div style={{ padding: 16 }}>404 — Page introuvable</div>} />
     </Routes>
   );
 }
