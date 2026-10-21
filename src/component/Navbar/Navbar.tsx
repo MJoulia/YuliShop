@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { LogOut, ShoppingCart } from "lucide-react";
 import "./Navbar.css";
+import { loadCart, LS_CART } from "../../cart";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -25,26 +26,12 @@ export default function Navbar() {
   // ---- Cart count (LS: yulishop_cart) ----
   const [cartCount, setCartCount] = useState<number>(0);
 
-  const getCartCountFromLS = () => {
-    try {
-      const raw = localStorage.getItem("yulishop_cart");
-      const arr = raw ? JSON.parse(raw) : [];
-      if (!Array.isArray(arr)) return 0;
-      return arr.reduce((n: number, it: any) => n + (Number(it?.quantity) || 0), 0);
-    } catch {
-      return 0;
-    }
-  };
-
-  // Initial + refresh on location change
-  useEffect(() => {
-    setCartCount(getCartCountFromLS());
-  }, [location.pathname]);
+  const getCartCountFromLS = () => loadCart().reduce((n, it) => n + it.quantity, 0);
 
   // Listen to storage changes (other tabs) and optional custom events
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
-      if (e.key === "yulishop_cart") setCartCount(getCartCountFromLS());
+      if (e.key === LS_CART) setCartCount(getCartCountFromLS());
     };
     const onCartUpdated = () => setCartCount(getCartCountFromLS());
 

@@ -2,18 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./CheckoutPage.css";
 import Navbar from "../Navbar/Navbar";
-
-type CartItem = {
-  id: string;
-  productId: string;
-  name: string;
-  brand?: string;
-  variant?: string;
-  image?: string;
-  priceCents: number;
-  quantity: number;
-  max?: number;
-};
+import { type CartItem, loadCart, LS_CART } from "../../cart";
 
 type Customer = {
   firstName: string;
@@ -30,22 +19,6 @@ type Customer = {
 
 type ShippingMethod = "standard" | "express";
 
-type Props = {
-  onOrderPlaced?: (order: {
-    id: string;
-    customer: Customer;
-    items: CartItem[];
-    shippingMethod: ShippingMethod;
-    paymentMethod: "card";
-    totals: {
-      subtotalCents: number;
-      shippingCents: number;
-      totalCents: number;
-    };
-  }) => void;
-};
-
-const LS_CART = "yulishop_cart";
 const LS_CUSTOMER = "yulishop_customer";
 const LS_PENDING_ORDER = "yulishop_pending_order";
 
@@ -53,15 +26,6 @@ const fmtPrice = (cents: number, locale = "de-DE", currency = "EUR") =>
   new Intl.NumberFormat(locale, { style: "currency", currency }).format(
     cents / 100
   );
-
-const loadCart = (): CartItem[] => {
-  try {
-    const raw = localStorage.getItem(LS_CART);
-    return raw ? (JSON.parse(raw) as CartItem[]) : [];
-  } catch {
-    return [];
-  }
-};
 
 const loadCustomer = (): Customer | null => {
   try {
@@ -75,17 +39,19 @@ const loadCustomer = (): Customer | null => {
 const saveCustomer = (c: Customer) => {
   try {
     localStorage.setItem(LS_CUSTOMER, JSON.stringify(c));
-  } catch {}
+  } catch {
+    /* storage unavailable */
+  }
 };
 
-export default function CheckoutPage({ onOrderPlaced }: Props) {
+export default function CheckoutPage() {
   const navigate = useNavigate();
 
   const [items, setItems] = useState<CartItem[]>(loadCart());
   const [shippingMethod, setShippingMethod] =
     useState<ShippingMethod>("standard");
   // 🚫 plus de choix de paiement : toujours "card"
-  const paymentMethod: "card" = "card";
+  const paymentMethod = "card" as const;
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -137,7 +103,7 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
         e.currentTarget.type === "checkbox"
           ? (e.currentTarget as HTMLInputElement).checked
           : e.currentTarget.value;
-      setCustomer((prev) => ({ ...prev, [k]: v as any }));
+      setCustomer((prev) => ({ ...prev, [k]: v }) as Customer);
     };
 
   const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -178,8 +144,8 @@ export default function CheckoutPage({ onOrderPlaced }: Props) {
       if (customer.saveInfo) saveCustomer(customer);
       setSubmitting(false);
       navigate("/pay");
-    } catch (err: any) {
-      setError(err?.message || "Something went wrong. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setSubmitting(false);
     }
   };

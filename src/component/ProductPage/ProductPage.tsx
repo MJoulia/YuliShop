@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./ProductPage.css";
 import { API_URL } from "../../config";
+import { addToCart } from "../../cart";
+import yuliFallback from "../../image/yuli.png";
 import Navbar from "../Navbar/Navbar";
 
 /* ===================== Types ===================== */
@@ -70,7 +72,6 @@ function Stars({
 export default function ProductPage() {
 
   //Base64
-  const [imageBase64, setImageBase64] = useState<string>("");
 
   const { slug } = useParams<{ slug: string }>();
   const [perfume, setPerfume] = useState<Perfume | null>(null);
@@ -96,33 +97,6 @@ export default function ProductPage() {
 
   const isLoggedIn = !!localStorage.getItem("yulishop_token");
 
-
-  function convertToBase64(file: Blob): Promise<string | ArrayBuffer | null> {
-    return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      fileReader.readAsDataURL(file);
-
-      fileReader.onload = () => resolve(fileReader.result);
-      fileReader.onerror = (error) => reject(error);
-    });
-  }
-
-  async function getBase64FromUrl(url: string): Promise<string | ArrayBuffer | null> {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const base64 = await convertToBase64(blob);
-    console.log(base64)
-    return base64
-  }
-
-  useEffect(() => {
-    (async () => {
-      const base64 = await getBase64FromUrl("./src/image/yuli.png"); 
-      if (typeof base64 === "string") {
-        setImageBase64(base64);
-      }
-    })();
-  }, []);
 
   /* -------- Load product -------- */
   useEffect(() => {
@@ -217,35 +191,25 @@ export default function ProductPage() {
   }, [currentVariant, perfume?.variants]);
 
   const cover = useMemo(() => {
-    return perfume?.images?.[0] || "/images/placeholder-perfume.jpg";
+    return perfume?.images?.[0] || yuliFallback;
   }, [perfume]);
 
   function addToBasket() {
     if (!perfume || !currentVariant) return;
     if (qty < 1) return;
 
-    const line = {
+    addToCart({
       productId: perfume._id,
       slug: perfume.slug,
       name: perfume.name,
       brand: perfume.brand,
       image: cover,
       sku: currentVariant.sku,
-      volumeMl: currentVariant.volumeMl,
+      variant: `${currentVariant.volumeMl} ml`,
       priceCents: currentVariant.priceCents,
-      qty: Math.min(qty, currentVariant.stock),
+      quantity: Math.min(qty, currentVariant.stock),
       max: currentVariant.stock,
-    };
-
-    const raw = localStorage.getItem("yulishop_cart");
-    const cart: any[] = raw ? JSON.parse(raw) : [];
-    const idx = cart.findIndex((x) => x.sku === line.sku);
-    if (idx >= 0) {
-      cart[idx].qty = Math.min(cart[idx].qty + line.qty, line.max);
-    } else {
-      cart.push(line);
-    }
-    localStorage.setItem("yulishop_cart", JSON.stringify(cart));
+    });
 
     const toast = document.createElement("div");
     toast.className = "toast";
@@ -300,8 +264,8 @@ export default function ProductPage() {
       toast.textContent = "Thanks for your review!";
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 1600);
-    } catch (e: any) {
-      alert(e?.message || "Failed to submit review");
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Failed to submit review");
     } finally {
       setSubmitting(false);
     }
@@ -345,13 +309,7 @@ export default function ProductPage() {
         <div className="product">
           {/* Left: image */}
           <div className="gallery">
-            { imageBase64 && 
-              <img
-                className="cover"
-                src={imageBase64}
-                alt="preview"
-                width={200}
-              />}
+            <img className="cover" src={cover} alt={perfume.name} width={200} />
           </div>
 
           {/* Right: info */}

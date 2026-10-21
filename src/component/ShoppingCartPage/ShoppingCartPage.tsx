@@ -3,18 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./ShoppingCartPage.css";
 import Navbar from "../Navbar/Navbar"; // ✅ Navbar
 
-// --- Types
-export type CartItem = {
-  id: string;
-  productId: string;
-  name: string;
-  brand?: string;
-  variant?: string;
-  image?: string;
-  priceCents: number;
-  quantity: number;
-  max?: number;
-};
+import { type CartItem, loadCart, saveCart } from "../../cart";
+export type { CartItem };
 
 // --- Utils
 const fmtPrice = (cents: number, locale = "de-DE", currency = "EUR") =>
@@ -24,22 +14,6 @@ const fmtPrice = (cents: number, locale = "de-DE", currency = "EUR") =>
 
 const clamp = (n: number, min: number, max: number) =>
   Math.min(Math.max(n, min), max);
-
-// --- LocalStorage helpers
-const LS_KEY = "yulishop_cart";
-const loadFromLS = (): CartItem[] => {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? (JSON.parse(raw) as CartItem[]) : [];
-  } catch {
-    return [];
-  }
-};
-const saveToLS = (items: CartItem[]) => {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(items));
-  } catch {}
-};
 
 // --- Props
 type Props = {
@@ -57,9 +31,8 @@ type Props = {
 export default function ShoppingCartPage({
   initialItems,
   shippingCents = 0,
-  onCheckout,
 }: Props) {
-  const [items, setItems] = useState<CartItem[]>(initialItems ?? loadFromLS());
+  const [items, setItems] = useState<CartItem[]>(initialItems ?? loadCart());
   const [promo, setPromo] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -67,7 +40,7 @@ export default function ShoppingCartPage({
   const discountRate = appliedPromo === "WELCOME10" ? 0.1 : 0;
 
   useEffect(() => {
-    if (!initialItems) saveToLS(items);
+    if (!initialItems) saveCart(items);
   }, [items, initialItems]);
 
   const subtotalCents = useMemo(
@@ -100,18 +73,6 @@ export default function ShoppingCartPage({
     if (!code) return;
     setAppliedPromo(code);
     setPromo("");
-  };
-
-  const handleLegacyCheckout = () => {
-    // Optionnel : conserve l'alerte + callback si tu l'utilises encore
-    const summary = {
-      items,
-      subtotalCents,
-      shippingCents: items.length ? shippingCents : 0,
-      totalCents,
-    };
-    if (onCheckout) onCheckout(summary);
-    alert(`Checkout → Total: ${fmtPrice(totalCents)}`);
   };
 
   return (
@@ -290,19 +251,3 @@ function EmptyState({ onContinue }: { onContinue: () => void }) {
     </div>
   );
 }
-
-// --- Demo data (facultatif)
-export const DemoCart: CartItem[] = [
-  {
-    id: "p1-100",
-    productId: "p1",
-    name: "Yuli A",
-    brand: "Yuli",
-    variant: "100 ml",
-    image:
-      "https://images.unsplash.com/photo-1605478054215-969413c1bc9d?q=80&w=400&auto=format&fit=crop",
-    priceCents: 7900,
-    quantity: 1,
-    max: 6,
-  },
-];
