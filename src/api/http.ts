@@ -19,9 +19,9 @@ export async function http<T>(
 ): Promise<T> {
   const { auth = false, headers, ...rest } = options;
 
-  const finalHeaders: HeadersInit = {
+  const finalHeaders: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(headers || {}),
+    ...((headers as Record<string, string>) || {}),
   };
 
   if (auth) {

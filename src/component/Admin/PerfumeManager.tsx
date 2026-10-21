@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./PerfumeManager.css";
+import { API_URL } from "../../config";
 
 type Variant = {
   sku?: string;
@@ -26,7 +27,6 @@ export default function PerfumeManager() {
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<Perfume | null>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const headers = {
     "Content-Type": "application/json",

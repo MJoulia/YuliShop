@@ -55,8 +55,22 @@ export default function App() {
         {/* Alias pour matcher ton Navbar ("/perfume-manager") */}
         <Route path="/perfume-manager" element={<PerfumeManager />} />
       </Route>
-      <Route path="/checkout" element={<CheckoutPage />} />
-      <Route path="/pay" element={<PaymentPage />} />
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute>
+            <CheckoutPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pay"
+        element={
+          <ProtectedRoute>
+            <PaymentPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* ---------- 404 ---------- */}
       <Route path="*" element={<div style={{ padding: 16 }}>404 — Page introuvable</div>} />

@@ -1,17 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "./PaymentPage.css";
 import Navbar from "../Navbar/Navbar";
-
-type CartItem = {
-  id: string;
-  productId: string;
-  name: string;
-  brand?: string;
-  variant?: string;
-  image?: string;
-  priceCents: number;
-  quantity: number;
-};
+import { type CartItem, saveCart } from "../../cart";
+import { http } from "../../api/http";
 
 type Customer = {
   firstName: string;
@@ -33,7 +24,6 @@ type PendingOrder = {
   totals: { subtotalCents: number; shippingCents: number; totalCents: number };
 };
 
-const LS_CART = "yulishop_cart";
 const LS_PENDING = "yulishop_pending_order";
 
 const fmtPrice = (cents: number, locale = "de-DE", currency = "EUR") =>
@@ -68,7 +58,9 @@ export default function PaymentPage() {
     try {
       const raw = localStorage.getItem(LS_PENDING);
       if (raw) setPending(JSON.parse(raw) as PendingOrder);
-    } catch {}
+    } catch {
+      /* corrupted pending order: treated as none */
+    }
   }, []);
 
   const validForm = useMemo(() => {
@@ -96,20 +88,25 @@ export default function PaymentPage() {
       await new Promise((r) => setTimeout(r, 1000));
 
       // Puis création de l'ordre côté backend
-      const res = await fetch("/api/orders", {
+      // Card details stay in the browser: only the cart lines and address are sent, and the server
+      // recalculates every price.
+      const order = await http<{ id: string }>("/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pending),
+        auth: true,
+        body: JSON.stringify({
+          customer: pending.customer,
+          shippingMethod: pending.shippingMethod,
+          items: pending.items.map((it) => ({ productId: it.productId, sku: it.sku, quantity: it.quantity })),
+        }),
       });
-      if (!res.ok) throw new Error(await res.text());
-      const { id } = await res.json();
+      const id = order.id;
 
       // Nettoyage
       localStorage.removeItem(LS_PENDING);
-      localStorage.setItem(LS_CART, JSON.stringify([]));
+      saveCart([]);
       setSuccessId(id);
-    } catch (err: any) {
-      setError(err?.message || "Payment failed. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Payment failed. Please try again.");
     } finally {
       setPaying(false);
     }
