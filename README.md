@@ -1,69 +1,43 @@
-# React + TypeScript + Vite
+# YuliShop
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![CI](https://github.com/MJoulia/YuliShop/actions/workflows/ci.yml/badge.svg)](https://github.com/MJoulia/YuliShop/actions/workflows/ci.yml)
 
-Currently, two official plugins are available:
+Web shop for perfumes, built with **React 19, TypeScript and Vite**. The REST API (Node.js, Express, MongoDB, with 63 automated API tests) lives in [MJoulia/yulishop-backend](https://github.com/MJoulia/yulishop-backend).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- Catalogue with search, product pages, variants (sizes) and stock-aware quantity
+- Reviews with star ratings; you can edit your own review
+- Basket, checkout with address validation, and a simulated card payment
+- Accounts with JWT login; routes protected by role (`user` / `admin`)
+- Admin area to create, edit and delete perfumes
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Engineering notes
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **One cart model** (`src/cart.ts`) shared by the product, basket, checkout and navbar pages. It replaced three incompatible copies; the product page used to store `qty` while the basket read `quantity`, which showed `NaN` totals.
+- **The server is the source of truth:** the checkout only sends product ids, SKUs and quantities, and the API recalculates every price.
+- **Card details never leave the browser:** the payment step is a demo with Luhn validation, ready to be swapped for Stripe Elements.
+- The API base URL comes from `VITE_API_URL`, so the same build works locally and in production.
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## Run locally
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env     # point VITE_API_URL at the API (default http://localhost:5124)
+npm install
+npm run dev              # http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Quality checks (also run in CI on every push):
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run lint
+npm run build            # type-check + production build
 ```
+
+## Deploy
+
+The repo includes `vercel.json` with single-page-app rewrites. Set `VITE_API_URL` in the hosting provider's environment settings.
+
+## License
+
+MIT
