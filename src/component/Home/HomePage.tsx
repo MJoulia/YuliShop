@@ -79,8 +79,8 @@ export default function HomePage() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data: PerfumeAPI[] = await res.json();
         setPerfumes(Array.isArray(data) ? data : []);
-      } catch (e: any) {
-        setErr(e?.message || "Erreur de chargement");
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : "Erreur de chargement");
       } finally {
         setLoading(false);
       }
